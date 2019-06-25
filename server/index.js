@@ -5,6 +5,7 @@ import bodyParser from 'body-parser';
 import morgan from 'morgan';
 import cors from 'cors';
 import errorhandler from 'errorhandler';
+import routes from './routes/index';
 
 dotenv.config();
 const isProduction = process.env.NODE_ENV === 'production';
@@ -17,6 +18,8 @@ app.use(morgan('dev'));
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+
+app.use(routes);
 
 if (!isProduction) {
   app.use(errorhandler());
