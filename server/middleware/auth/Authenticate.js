@@ -1,8 +1,10 @@
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import models from '../../models';
 
 dotenv.config();
 
+const { User } = models;
 /**
  * A class that handles authentication including generating and verifying user tokens.
  */
@@ -14,10 +16,10 @@ class Authenticate {
    * @param {string} userName
    * @returns {string} token
    */
-  static generateToken(id, email, userName) {
+  static generateToken(id, email) {
     const token = jwt.sign(
       {
-        userId: id, email, userName
+        userId: id, email
       },
       process.env.SECRET_KEY,
       {
@@ -35,6 +37,7 @@ class Authenticate {
    * @returns {void}
    */
   static verifyToken(req, res, next) {
+    console.log(req);
     const token = req.headers.authorization;
     if (!token) {
       return res.status(401).json({
@@ -42,31 +45,25 @@ class Authenticate {
         error: 'No Authentication Token Provided',
       });
     }
-    jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
+    jwt.verify(token, process.env.SECRET_KEY, async (err, decoded) => {
       if (err) {
         return res.status(401).json({
           status: res.statusCode,
           error: 'token not verified',
         });
       }
-      const { userId, email, userName } = decoded;
-      req.user = { userId, email, userName };
+      const { userId, email } = decoded;
+      req.user = { userId, email };
+
+      const user = await User.findByPk(userId);
+      if (!user) {
+        return res.status(404).json({
+          status: 404,
+          error: 'This user does not exist'
+        });
+      }
       next();
     });
   }
-
-  /**
-   * decodes user tokens
-   * @param {string} token
-   * @returns {object} decoded
-   */
-  static decodeToken(token) {
-    let payload = '';
-    jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
-      payload = decoded;
-    });
-    return payload;
-  }
 }
-
 export default Authenticate;
