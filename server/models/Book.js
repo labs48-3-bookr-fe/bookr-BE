@@ -12,11 +12,6 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false
     },
-    rating: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      defaultValue: 0
-    },
     publisher: {
       type: DataTypes.STRING,
       allowNull: false
@@ -25,5 +20,17 @@ module.exports = (sequelize, DataTypes) => {
   {
     timestamps: false
   });
+  Book.associate = (models) => {
+    Book.hasMany(models.Review, {
+      foreignKey: 'bookId',
+      as: 'reviews',
+      onDelete: 'CASCADE'
+    });
+    Book.hasMany(models.Rating, {
+      foreignKey: 'bookId',
+      as: 'ratings',
+      onDelete: 'CASCADE'
+    });
+  };
   return Book;
 };
