@@ -37,7 +37,6 @@ class Authenticate {
    * @returns {void}
    */
   static verifyToken(req, res, next) {
-    console.log(req);
     const token = req.headers.authorization;
     if (!token) {
       return res.status(401).json({
