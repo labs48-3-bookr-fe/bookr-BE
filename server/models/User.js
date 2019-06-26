@@ -22,7 +22,18 @@ const userModel = (sequelize, DataTypes) => {
   }, {
     timestamps: false,
   });
-
+  User.associate = (models) => {
+    User.hasMany(models.Review, {
+      foreignKey: 'userId',
+      as: 'reviews',
+      onDelete: 'CASCADE'
+    });
+    User.hasMany(models.Rating, {
+      foreignKey: 'userId',
+      as: 'ratings',
+      onDelete: 'CASCADE'
+    });
+  };
   return User;
 };
 

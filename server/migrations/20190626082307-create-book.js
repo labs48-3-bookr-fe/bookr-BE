@@ -22,11 +22,6 @@ module.exports = {
     image: {
       type: Sequelize.STRING,
       allowNull: true
-    },
-    rating: {
-      type: Sequelize.INTEGER,
-      allowNull: false,
-      defaultValue: 0
     }
   }),
   down: (queryInterface, Sequelize) => queryInterface.dropTable('Books')

@@ -1,6 +1,6 @@
 import models from '../models';
 
-const { Book } = models;
+const { Book, Review } = models;
 
 /**
  * A class that handles all book operations
@@ -52,7 +52,11 @@ class BookController {
    */
   static async getBooks(req, res, next) {
     try {
-      const books = await Book.findAll();
+      const books = await Book.findAll({
+        include: [
+          { model: Review, as: 'reviews' }
+        ]
+      });
       if (!books.length) {
         return res.status(200).json({
           status: 200,
@@ -79,10 +83,14 @@ class BookController {
    */
   static async getBook(req, res, next) {
     try {
-      const book = await Book.findByPk(req.params.bookId);
+      const book = await Book.findByPk(req.params.bookId, {
+        include: [
+          { model: Review, as: 'reviews' }
+        ]
+      });
       if (!book) {
-        return res.status(200).json({
-          status: 200,
+        return res.status(404).json({
+          status: 404,
           message: 'This book does not exist'
         });
       }
@@ -108,14 +116,14 @@ class BookController {
     try {
       const book = await Book.findByPk(req.params.bookId);
       if (!book) {
-        return res.status(200).json({
-          status: 200,
+        return res.status(404).json({
+          status: 404,
           message: 'This book does not exist'
         });
       }
 
       const deletedBook = await book.destroy().catch(next);
-      if (!deletedBook) {
+      if (!deletedBook.length) {
         return res.status(200).json({
           status: 200,
           message: 'This book was successfully deleted'
@@ -125,7 +133,6 @@ class BookController {
       next(e);
     }
   }
-
 }
 
 export default BookController;
