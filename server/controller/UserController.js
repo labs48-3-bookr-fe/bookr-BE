@@ -1,6 +1,6 @@
-/* eslint-disable no-unused-vars */
 import models from '../models';
 import Authenticate from '../middleware/auth/Authenticate';
+import Helper from '../middleware/helper';
 
 const { User } = models;
 
@@ -17,36 +17,79 @@ class UserController {
    *
    */
   static async signUp(req, res, next) {
-    const {
-      firstName, lastName, email, password, gender
-    } = req.body;
+    try {
+      const {
+        firstName, lastName, email, password
+      } = req.body;
 
-    const [user, created] = await User.findOrCreate({
-      where: { email },
-      defaults: {
-        firstName,
-        lastName,
-        email,
-        gender,
-        password
-      }
-    });
-    if (!created) {
-      return res.status(400).json({
-        status: 400,
-        error: 'This user already exists',
+      const hashedPassword = Helper.encryptPassword(password);
+
+      const [user, created] = await User.findOrCreate({
+        where: { email },
+        defaults: {
+          firstName,
+          lastName,
+          email,
+          password: hashedPassword
+        }
       });
+      if (!created) {
+        return res.status(400).json({
+          status: 400,
+          error: 'This user already exists',
+        });
+      }
+
+      const token = Authenticate.generateToken(user.id, user.email);
+      return res.status(201).json({
+        status: res.statusCode,
+        message: 'user registration was successful',
+        user,
+        token,
+      });
+    } catch (e) {
+      next(e);
     }
+  }
 
-    const token = Authenticate.generateToken(user.id, user.email, user.userName);
+  /**
+   * login a registered user
+   * @param {object} req - request object
+   * @param {object} res - response object
+   * @param{function} next - next function
+   * @returns {object} response object
+   *
+   */
+  static async signIn(req, res, next) {
+    try {
+      const { email, password } = req.body;
+      const user = await User.findOne({ where: { email } }).catch(next);
 
-    return res.status(201).json({
-      status: res.statusCode,
-      message: 'user registration was successful',
-      user,
-      token,
-    });
+      if (!user) {
+        return res.status(401).json({
+          status: res.statusCode,
+          error: 'Invalid email or password',
+        });
+      }
+
+      const passwordsMatch = Helper.comparePassword(password, user.password);
+      if (!passwordsMatch) {
+        return res.status(401).json({
+          status: res.statusCode,
+          error: 'Invalid email or password',
+        });
+      }
+
+      const token = Authenticate.generateToken(user.id, user.email);
+      return res.status(200).json({
+        status: res.statusCode,
+        message: 'login was sucessful',
+        user,
+        token
+      });
+    } catch (e) {
+      next(e);
+    }
   }
 }
-
 export default UserController;
