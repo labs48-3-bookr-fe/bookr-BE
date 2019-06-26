@@ -1,6 +1,6 @@
 import models from '../models';
 
-const { Book, Review } = models;
+const { Book, Review, Rating } = models;
 
 /**
  * A class that handles all book operations
@@ -54,7 +54,8 @@ class BookController {
     try {
       const books = await Book.findAll({
         include: [
-          { model: Review, as: 'reviews' }
+          { model: Review, as: 'reviews' },
+          { model: Rating, as: 'ratings' }
         ]
       });
       if (!books.length) {
@@ -85,7 +86,8 @@ class BookController {
     try {
       const book = await Book.findByPk(req.params.bookId, {
         include: [
-          { model: Review, as: 'reviews' }
+          { model: Review, as: 'reviews' },
+          { model: Rating, as: 'ratings' }
         ]
       });
       if (!book) {
