@@ -5,8 +5,13 @@ import Authenticate from '../../middleware/auth/Authenticate';
 
 const router = express.Router();
 const { verifyToken } = Authenticate;
-const { addBook } = BookController;
+const {
+  addBook, getBooks, getBook, deleteBook
+} = BookController;
 
 router.post('/books', verifyToken, postBookValidation, addBook);
+router.get('/books', verifyToken, getBooks);
+router.get('/books/:bookId', verifyToken, getBook);
+router.delete('/books/:bookId', verifyToken, deleteBook);
 
 export default router;
